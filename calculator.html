@@ -1,15 +1,110 @@
 <!DOCTYPE html>
-<html> 
+<html lang="en">
 <head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta name="generator" content="RocketCake">
-	<title></title>
-	<link rel="stylesheet" type="text/css" href="calculator_html.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VECO Mining Rewards Calculator</title>
+    <style>
+        body {
+            background: black;
+            margin: 30px;
+            padding-top: 11px;
+            font-family: Inter, sans-serif;
+        }
+        input[type="number"], input[type="submit"] {
+            padding: 10px;
+            margin: 10px 0px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 15px;
+            background-color: #333; /* Hintergrund der Eingabefelder angepasst */
+            color: white; /* Textfarbe der Eingabefelder */
+        }
+        input[type="submit"] {
+            background-color: #FF8000;
+            color: white;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #e69500;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #fbeee3;
+            border-radius: 5px;
+            color: black;
+            text-align: center; /* Zentriert den Text innerhalb des Ergebnisbereichs */
+        }
+        h1 {
+            color: #FF8000;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        label {
+            color: white; /* Stellt Textfarbe von Label und Ergebnissen auf weiß */
+        }
+    </style>
 </head>
 <body>
-<div class="textstyle1">
-  <span class="textstyle2"><br/>VECO Mining Rewards Calculator</span>
-  </div>
+    <div class="container">
+        <h1>VECO Mining Rewards Calculator</h1>
+        <label for="user-hashrate" class="white-text">Enter Your Hashrate (Hash/sec):</label>
+        <input type="number" id="user-hashrate" placeholder="Enter your hashrate">
+        <input type="submit" value="Calculate Average Rewards" onclick="calculateRewards()">
+        <div id="results"></div>
+    </div>
+
+    <script>
+    function calculateRewards() {
+        const userHashrate = parseFloat(document.getElementById('user-hashrate').value);
+        const rewardsPerBlock = 4.5; // VECO
+        const blockTimeMinutes = 2;
+        
+        // Fetch the current network hashrate
+        fetch('https://explorer2.vecocoin.com/api/getnetworkhashps')
+            .then(response => response.json())
+            .then(networkHashrate => {
+                // Fetch the current VECO price in USD from Coingecko
+                return fetch('https://api.coingecko.com/api/v3/simple/price?ids=veco&vs_currencies=usd')
+                    .then(priceResponse => priceResponse.json())
+                    .then(priceData => {
+                        const vecoPriceInUSD = priceData.veco.usd;
+                        const totalHashrateWithUser = networkHashrate + userHashrate;
+
+                        const blocksPerHour = 60 / blockTimeMinutes;
+                        const blocksPerDay = blocksPerHour * 24;
+                        const blocksPerWeek = blocksPerDay * 7;
+                        const blocksPerMonth = blocksPerDay * 30;
+
+                        const userPercentageOfTotal = (userHashrate / totalHashrateWithUser) * 100;
+                        const rewardsPerHour = rewardsPerBlock * blocksPerHour * (userHashrate / totalHashrateWithUser);
+                        const rewardsPerDay = rewardsPerBlock * blocksPerDay * (userHashrate / totalHashrateWithUser);
+                        const rewardsPerWeek = rewardsPerBlock * blocksPerWeek * (userHashrate / totalHashrateWithUser);
+                        const rewardsPerMonth = rewardsPerBlock * blocksPerMonth * (userHashrate / totalHashrateWithUser);
+
+                        const rewardsInUSDPerDay = rewardsPerDay * vecoPriceInUSD;
+
+                        document.getElementById('results').innerHTML = `
+                            <p>Current Network Hashrate: ${networkHashrate.toFixed(2)} Hash/s</p>
+                            <p>Your Hashrate's Percentage of Total: ${userPercentageOfTotal.toFixed(2)}%</p>
+                            <p>Rewards per 1 hour: ${rewardsPerHour.toFixed(1)} VECO (${(rewardsPerHour * vecoPriceInUSD).toFixed(2)} USD)</p>
+                            <p>Rewards per 24 hours: ${rewardsPerDay.toFixed(1)} VECO (${rewardsInUSDPerDay.toFixed(2)} USD)</p>
+                            <p>Rewards per 1 week: ${rewardsPerWeek.toFixed(1)} VECO (${(rewardsPerWeek * vecoPriceInUSD).toFixed(2)} USD)</p>
+                            <p>Rewards per 1 month: ${rewardsPerMonth.toFixed(1)} VECO (${(rewardsPerMonth * vecoPriceInUSD).toFixed(2)} USD)</p>
+                        `;
+                    });
+            })
+            .catch(error => {
+    console.error('Error fetching data:', error);
+    document.getElementById('results').innerText = `Error fetching data from the API. Details: ${error.message}`;
+});
+    }
+</script>
+
 </body>
 </html>
