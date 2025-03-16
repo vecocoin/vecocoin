@@ -17,8 +17,8 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 15px;
-            background-color: #333; /* Hintergrund der Eingabefelder angepasst */
-            color: white; /* Textfarbe der Eingabefelder */
+            background-color: #333; 
+            color: white; 
         }
         input[type="submit"] {
             background-color: #FF8000;
@@ -34,8 +34,7 @@
             background-color: #fbeee3;
             border-radius: 5px;
             color: black;
-            text-align: center; /* Zentriert den Text innerhalb des Ergebnisbereichs */
-        }
+            text-align: center;         }
         h1 {
             color: #FF8000;
         }
@@ -46,8 +45,7 @@
             width: 100%;
         }
         label {
-            color: white; /* Stellt Textfarbe von Label und Ergebnissen auf weiß */
-        }
+            color: white;         }
     </style>
 </head>
 <body>
@@ -62,7 +60,7 @@
     <script>
     function calculateRewards() {
         const userHashrate = parseFloat(document.getElementById('user-hashrate').value);
-        const rewardsPerBlock = 4.5; // VECO
+        const rewardsPerBlock = 4; // VECO
         const blockTimeMinutes = 2;
         
         // Fetch the current network hashrate
