@@ -1,142 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VECO Mining Rewards Calculator</title>
-    <style>
-        body {
-            background: black;
-            margin: 30px;
-            padding-top: 11px;
-            font-family: Inter, sans-serif;
-        }
-        input[type="number"], input[type="submit"] {
-            padding: 10px;
-            margin: 10px 0px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 15px;
-            background-color: #333; 
-            color: white; 
-        }
-        input[type="submit"] {
-            background-color: #FF8000;
-            color: white;
-            cursor: pointer;
-        }
-        input[type="submit"]:hover {
-            background-color: #e69500;
-        }
-        #results {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #fbeee3;
-            border-radius: 5px;
-            color: black;
-            text-align: center;         }
-        h1 {
-            color: #FF8000;
-        }
-        .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-        }
-        label {
-            color: white;         }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VECO Mining Rewards Calculator</title>
+  <style>
+    body {
+      background: black;
+      margin: 30px;
+      padding-top: 11px;
+      font-family: Inter, sans-serif;
+    }
+
+    input[type="number"],
+    input[type="submit"] {
+      padding: 10px;
+      margin: 10px 0px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 15px;
+      background-color: #333;
+      color: white;
+    }
+
+    input[type="submit"] {
+      background-color: #FF8000;
+      color: white;
+      cursor: pointer;
+    }
+
+    input[type="submit"]:hover {
+      background-color: #e69500;
+    }
+
+    #results {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #fbeee3;
+      border-radius: 5px;
+      color: black;
+      text-align: center;
+    }
+
+    h1 {
+      color: #FF8000;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    label {
+      color: white;
+    }
+  </style>
 </head>
+
 <body>
-    <div class="container">
-        <h1>VECO Mining Rewards Calculator</h1>
-        <label for="user-hashrate" class="white-text">Enter Your Hashrate (Hash/sec):</label>
-        <input type="number" id="user-hashrate" placeholder="Enter your hashrate">
-        <input type="submit" value="Calculate Average Rewards" onclick="calculateRewards()">
-        <div id="results"></div>
-    </div>
+  <div class="container">
+    <h1>VECO Mining Rewards Calculator</h1>
+    <label for="user-hashrate" class="white-text">Enter Your Hashrate (Hash/sec):</label>
+    <input type="number" id="user-hashrate" placeholder="Enter your hashrate">
+    <input type="submit" value="Calculate Average Rewards" onclick="calculateRewards()">
+    <div id="results"></div>
+  </div>
 
-    <script>
-const REWARDS_PER_BLOCK = 4;      
-const BLOCK_TIME_MIN = 2;         
-const HASHRATE_URL = 'https://explorer2.vecocoin.com/api/getnetworkhashps';
-const PRICE_URL    = 'https://api.coinpaprika.com/v1/tickers/veco-veco';
+  <script>
+    const REWARDS_PER_BLOCK = 4;
+    const BLOCK_TIME_MIN = 2;
+    const HASHRATE_URL = 'https://explorer2.vecocoin.com/api/getnetworkhashps';
+    const PRICE_URL = 'https://api.coinpaprika.com/v1/tickers/veco-veco';
 
-const fmt = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 });
-const fmt4 = new Intl.NumberFormat('en-US', { maximumFractionDigits: 4 });
+    const fmt = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 });
+    const fmt4 = new Intl.NumberFormat('en-US', { maximumFractionDigits: 4 });
 
-async function fetchNetworkHashrate() {
-  const r = await fetch(HASHRATE_URL, { cache: 'no-store' });
-  if (!r.ok) throw new Error(`Hashrate HTTP ${r.status}`);
+    async function fetchNetworkHashrate() {
+      const r = await fetch(HASHRATE_URL, { cache: 'no-store' });
+      if (!r.ok) throw new Error(`Hashrate HTTP ${r.status}`);
 
-  const text = await r.text();
-  const val = parseFloat(text);
-  if (!Number.isFinite(val)) {
+      const text = await r.text();
+      const val = parseFloat(text);
+      if (!Number.isFinite(val)) {
 
-    try {
-      const j = JSON.parse(text);
-      const n = (typeof j === 'number') ? j : parseFloat(j?.hashrate ?? j?.result ?? NaN);
-      if (Number.isFinite(n)) return n;
-    } catch {}
-    throw new Error('Unexpected hashrate response');
-  }
-  return val;
-}
+        try {
+          const j = JSON.parse(text);
+          const n = (typeof j === 'number') ? j : parseFloat(j?.hashrate ?? j?.result ?? NaN);
+          if (Number.isFinite(n)) return n;
+        } catch { }
+        throw new Error('Unexpected hashrate response');
+      }
+      return val;
+    }
 
-async function fetchVecoPriceUSD() {
-  const r = await fetch(PRICE_URL, { cache: 'no-store' });
-  if (!r.ok) throw new Error(`Price HTTP ${r.status}`);
-  const data = await r.json();
-  const price = data?.quotes?.USD?.price;
-  if (typeof price !== 'number' || !Number.isFinite(price)) {
-    throw new Error('Invalid price payload');
-  }
-  return price; // USD ~ USDT
-}
+    async function fetchVecoPriceUSD() {
+      const r = await fetch(PRICE_URL, { cache: 'no-store' });
+      if (!r.ok) throw new Error(`Price HTTP ${r.status}`);
+      const data = await r.json();
+      const price = data?.quotes?.USD?.price;
+      if (typeof price !== 'number' || !Number.isFinite(price)) {
+        throw new Error('Invalid price payload');
+      }
+      return price; // USD ~ USDT
+    }
 
-function calcRewards(userHashrate, networkHashrate, priceUSD) {
-  const totalHashrate = userHashrate + networkHashrate;
-  if (totalHashrate <= 0) {
-    return { userPct: 0, h: 0, d: 0, w: 0, m: 0, priceUSD };
-  }
-  const blocksPerHour  = 60 / BLOCK_TIME_MIN;
-  const blocksPerDay   = blocksPerHour * 24;
-  const blocksPerWeek  = blocksPerDay * 7;
-  const blocksPerMonth = blocksPerDay * 30;
+    function calcRewards(userHashrate, networkHashrate, priceUSD) {
+      const totalHashrate = userHashrate + networkHashrate;
+      if (totalHashrate <= 0) {
+        return { userPct: 0, h: 0, d: 0, w: 0, m: 0, priceUSD };
+      }
+      const blocksPerHour = 60 / BLOCK_TIME_MIN;
+      const blocksPerDay = blocksPerHour * 24;
+      const blocksPerWeek = blocksPerDay * 7;
+      const blocksPerMonth = blocksPerDay * 30;
 
-  const share = userHashrate / totalHashrate;
-  const userPct = share * 100;
+      const share = userHashrate / totalHashrate;
+      const userPct = share * 100;
 
-  const perHour  = REWARDS_PER_BLOCK * blocksPerHour  * share;
-  const perDay   = REWARDS_PER_BLOCK * blocksPerDay   * share;
-  const perWeek  = REWARDS_PER_BLOCK * blocksPerWeek  * share;
-  const perMonth = REWARDS_PER_BLOCK * blocksPerMonth * share;
+      const perHour = REWARDS_PER_BLOCK * blocksPerHour * share;
+      const perDay = REWARDS_PER_BLOCK * blocksPerDay * share;
+      const perWeek = REWARDS_PER_BLOCK * blocksPerWeek * share;
+      const perMonth = REWARDS_PER_BLOCK * blocksPerMonth * share;
 
-  return { userPct, h: perHour, d: perDay, w: perWeek, m: perMonth, priceUSD };
-}
+      return { userPct, h: perHour, d: perDay, w: perWeek, m: perMonth, priceUSD };
+    }
 
-async function calculateRewards() {
-  const input = document.getElementById('user-hashrate');
-  const out   = document.getElementById('results');
-  const userHashrate = parseFloat(input.value);
+    async function calculateRewards() {
+      const input = document.getElementById('user-hashrate');
+      const out = document.getElementById('results');
+      const userHashrate = parseFloat(input.value);
 
-  if (!Number.isFinite(userHashrate) || userHashrate <= 0) {
-    out.textContent = 'Please enter a valid hashrate (number > 0).';
-    return;
-  }
+      if (!Number.isFinite(userHashrate) || userHashrate <= 0) {
+        out.textContent = 'Please enter a valid hashrate (number > 0).';
+        return;
+      }
 
-  out.textContent = 'Calculating…';
+      out.textContent = 'Calculating…';
 
-  try {
-    const [networkHashrate, priceUSD] = await Promise.all([
-      fetchNetworkHashrate(),
-      fetchVecoPriceUSD()
-    ]);
+      try {
+        const [networkHashrate, priceUSD] = await Promise.all([
+          fetchNetworkHashrate(),
+          fetchVecoPriceUSD()
+        ]);
 
-    const res = calcRewards(userHashrate, networkHashrate, priceUSD);
+        const res = calcRewards(userHashrate, networkHashrate, priceUSD);
 
-    out.innerHTML = `
+        out.innerHTML = `
       <p>Current Network Hashrate: <b>${fmt.format(networkHashrate)}</b> H/s</p>
       <p>Your Share of Network: <b>${fmt.format(res.userPct)}</b>%</p>
       <p>Rewards per 1 hour: <b>${fmt4.format(res.h)}</b> VECO
@@ -149,11 +161,12 @@ async function calculateRewards() {
          (<b>$${fmt.format(res.m * res.priceUSD)}</b>)</p>
       <p style="opacity:.7">Price source: CoinPaprika (USD ≈ USDT)</p>
     `;
-  } catch (err) {
-    console.error('Error fetching data:', err);
-    out.textContent = `Error fetching data. Details: ${err.message}`;
-  }
-}
-</script>
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        out.textContent = `Error fetching data. Details: ${err.message}`;
+      }
+    }
+  </script>
 </body>
+
 </html>
